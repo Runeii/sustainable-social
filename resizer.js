@@ -66,8 +66,8 @@ const addHighlight = async (original, highlight) => {
 const resizeImage = async (input, highlights) => {
 	const { width, height } = await input.metadata();
 	const background = await blowOut(input.clone(), BACKGROUND_SIZE, width);
-
-	background.composite(imagesForCompositing);
+	console.log(highlights)
+	//background.composite(imagesForCompositing);
 	return background;
 }
 

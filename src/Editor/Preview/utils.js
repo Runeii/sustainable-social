@@ -8,6 +8,11 @@ export const getPreviewImage = async (remoteID, savedShapes) => {
 	return img;
 }
 
+export const getFinalImageUrl = (remoteID, savedShapes) => {
+	const shapes = encodeURIComponent(JSON.stringify(savedShapes))
+	return `http://localhost:3001/final/${remoteID}?shapes=${shapes}`;
+}
+
   
 export const refreshImage = async (context, canvasRef, containerRef, image) => {
 	if (!image) {

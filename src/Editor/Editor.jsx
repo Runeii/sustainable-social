@@ -1,6 +1,7 @@
 import styles from './Editor.module.css';
 import React, { useState } from 'react';
 import Preview from './Preview/Preview';
+import { getFinalImageUrl } from './Preview/utils';
 
 const Editor = ({ originalImage, remoteID }) => {
 
@@ -26,6 +27,7 @@ const Editor = ({ originalImage, remoteID }) => {
           savedShapes={savedShapes}
         />
       </div>
+      <a href={getFinalImageUrl(remoteID, savedShapes)} target="_blank">Download final image</a>
     </div>
   )
 };

@@ -7,7 +7,13 @@ const sharp = require('sharp');
 const resizeImage = require('./resizer');
 const fs = require('fs');
 
+const UPLOADS_FOLDER = __dirname + '/uploads';
 const PREVIEWS_FOLDER = __dirname + '/previews';
+
+if (!fs.existsSync(UPLOADS_FOLDER)){
+	fs.mkdirSync(UPLOADS_FOLDER)
+}
+
 if (!fs.existsSync(PREVIEWS_FOLDER)){
 	fs.mkdirSync(PREVIEWS_FOLDER)
 }
@@ -27,12 +33,14 @@ app.post('/upload', async (req, res) => {
             });
         } else {
             const { image } = req.files;
-			image.mv(`./uploads/${image.name}`);
-			await sharp('./R011def.jpg')
+			await image.mv(`${UPLOADS_FOLDER}/${image.name}`);
+			console.log('Start')
+			await sharp(`${UPLOADS_FOLDER}/${image.name}`)
 				.resize(1024, 1024, {
 					fit: 'inside'
 				})
 				.toFile(`${PREVIEWS_FOLDER}/${image.name}`)
+			console.log('here')
 			res.status(200).send();
         }
     } catch (err) {
@@ -40,9 +48,11 @@ app.post('/upload', async (req, res) => {
     }
 });
 
-app.use('/preview/:filename', async (req, res, next) => {
+
+const generateImage = async (isPreview, req, res, next) => {
+	const folder = isPreview ? PREVIEWS_FOLDER : UPLOADS_FOLDER;
 	const shapes = req.query?.shapes ? JSON.parse(req.query?.shapes) : [];
-	const input = sharp(`${PREVIEWS_FOLDER}/${req.params.filename}`);
+	const input = sharp(`${folder}/${req.params.filename}`);
 	try {
 		const image = shapes.length > 0 ? await resizeImage(input, shapes) : input;
 		res.status(200);
@@ -51,7 +61,10 @@ app.use('/preview/:filename', async (req, res, next) => {
 	} catch (error) {
 		next(error)
 	}
-});
+};
+
+app.use('/preview/:filename', async (req, res, next) => generateImage(true, req, res, next));
+app.use('/final/:filename', async (req, res, next) => generateImage(false, req, res, next));
 
 app.use('/original', async (req, res) => {
 	const image = sharp('./R011def.jpg');
