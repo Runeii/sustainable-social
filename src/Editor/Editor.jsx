@@ -10,11 +10,17 @@ const Editor = ({ originalImage, remoteID }) => {
     setSavedShapes([...savedShapes, shape]);
   }
 
+  const handleAddShapeError = () => {
+    console.error('Error adding shape:', savedShapes[savedShapes.length - 1]);
+    setSavedShapes(savedShapes.slice(savedShapes.length, 1));
+  }
+
   return (
     <div className={styles.frame}>
       <div className={styles.preview}>
         <Preview
           addShape={addShape}
+          onAddShapeError={handleAddShapeError}
           originalImage={originalImage}
           remoteID={remoteID}
           savedShapes={savedShapes}

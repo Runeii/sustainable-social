@@ -66,32 +66,8 @@ const addHighlight = async (original, highlight) => {
 const resizeImage = async (input, highlights) => {
 	const { width, height } = await input.metadata();
 	const background = await blowOut(input.clone(), BACKGROUND_SIZE, width);
-	const cropAreas = await Promise.all(highlights.map(highlight => addHighlight(input, highlight)));
-	const imagesForCompositing = await Promise.all(zip(...cropAreas).flat().map(async cropArea => {
-		const { initialWidth, stepIndex, left, width:cropW, height: cropH, top} = cropArea;
-		const compressedSize = BACKGROUND_SIZE + ((initialWidth - BACKGROUND_SIZE) / STEPS * stepIndex);
-		console.log('Starting', stepIndex);
-		console.log(width, height, cropW + left, cropH + top)
-		const crop = input.clone().extract(cropArea);
-		const blownOutCrop = stepIndex === STEPS ? crop : await blowOut(crop, compressedSize, width);
 
-		return {
-			...cropArea,
-			input: await blownOutCrop.toBuffer(),
-		};
-	}));
-
-	try {	
-		console.log('Background', await background.metadata());
-		console.log(await Promise.all(imagesForCompositing.map(async (image, i) => {
-			const meta = await sharp(image.input).metadata();
-			return `${i} ${(JSON.stringify(meta))}`;
-		})));
-		background.composite(imagesForCompositing);
-	} catch (error) {
-		console.log(error);
-	}
-
+	background.composite(imagesForCompositing);
 	return background;
 }
 

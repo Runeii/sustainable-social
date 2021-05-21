@@ -40,13 +40,17 @@ app.post('/upload', async (req, res) => {
     }
 });
 
-app.use('/preview/:filename', async (req, res) => {
+app.use('/preview/:filename', async (req, res, next) => {
 	const shapes = req.query?.shapes ? JSON.parse(req.query?.shapes) : [];
 	const input = sharp(`${PREVIEWS_FOLDER}/${req.params.filename}`);
-	const image = shapes.length > 0 ? await resizeImage(input, shapes) : input;
-	res.status(200);
-	res.contentType('image/jpeg');
-	return res.send(await image.toBuffer());
+	try {
+		const image = shapes.length > 0 ? await resizeImage(input, shapes) : input;
+		res.status(200);
+		res.contentType('image/jpeg');
+		return res.send(await image.toBuffer());
+	} catch (error) {
+		next(error)
+	}
 });
 
 app.use('/original', async (req, res) => {

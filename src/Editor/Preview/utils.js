@@ -6,7 +6,7 @@ export const getPreviewImage = async (remoteID, savedShapes) => {
 	img.decoding = 'async';
 	await img.decode()
 	return img;
-  }
+}
 
   
 export const refreshImage = async (context, canvasRef, containerRef, image) => {

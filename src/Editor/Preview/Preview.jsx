@@ -3,7 +3,7 @@ import { getPreviewImage, refreshImage, refreshShapes } from './utils';
 import React, { useEffect, useRef, useState } from 'react';
 import { onMouseDown, onMouseLeave, onMouseMove, onMouseUp } from './CanvasInteractions';
 
-const Preview = ({ addShape, originalImage, remoteID, savedShapes }) => {
+const Preview = ({ addShape, onAddShapeError, originalImage, remoteID, savedShapes }) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -20,6 +20,10 @@ const Preview = ({ addShape, originalImage, remoteID, savedShapes }) => {
       .then((img) => {
         setIsLoading(false);
         setImage(img);
+      })
+      .catch(() => {
+        setIsLoading(false);
+        onAddShapeError();
       })
   }, [remoteID, savedShapes]);
 
