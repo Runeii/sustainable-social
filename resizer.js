@@ -6,6 +6,7 @@ const blowOut = async (image, width, finalWidth) => {
 	if (width === finalWidth) {
 		return image;
 	}
+	
 	const small = await image.resize({
 		width: Math.round(width),
 		kernel: 'nearest'
@@ -17,61 +18,66 @@ const blowOut = async (image, width, finalWidth) => {
 	});
 };
 
-const calculateBoundedCropArea = (top, left, width, height, initialWidth, initialHeight, fullImageWidth, fullImageHeight) => {
-	const adjustedLeft = left - ((width - initialWidth) / 2)
-	const adjustedTop = top - ((height - initialHeight) / 2)
+const BACKGROUND_SIZE = 8;
+const STEPS = 5;
 
-	const boundedLeft = Math.max(0, adjustedLeft);
-	const boundedTop = Math.max(0, adjustedTop);
-
-	const boundedWidth = clamp(width + (adjustedLeft - boundedLeft), 0, fullImageWidth - boundedLeft);
-	const boundedHeight = clamp(height + (adjustedTop - boundedTop), 0, fullImageHeight - boundedTop)	
-
-	return  {
-		top: Math.round(boundedTop),
-		left: Math.round(boundedLeft),
-		width: Math.round(boundedWidth),
-		height: Math.round(boundedHeight),
-		initialWidth,
-		initialHeight
-	};
+const fibonacci = num => {
+	let a = 1;
+	let b = 0
+	let temp;
+  
+	while (num >= 0){
+	  temp = a;
+	  a = a + b;
+	  b = temp;
+	  num--;
+	}
+  
+	return b;
 }
 
-const addHighlight = async (original, highlight) => {
-	let { top, left, width, height } = highlight;
-	const { width: fullImageWidth, height: fullImageHeight } = await original.metadata();
-
-	top = Math.round((fullImageHeight / 100) * top);
-	left = Math.round((fullImageWidth / 100) * left);
-	width = Math.round((fullImageWidth / 100) * width);
-	height = Math.round((fullImageHeight / 100) * height);
-
-	return Array(5).fill(1).map((_, i) => {
-		const stepIndex = i + 1;
-		let widthAfterGrow = Math.round(width + (width * 4 / stepIndex))
-		let heightAfterGrow = Math.round(height + (height * 4 / stepIndex))
-		widthAfterGrow = widthAfterGrow % 2 === 0 ? widthAfterGrow : widthAfterGrow + 1;
-		heightAfterGrow = heightAfterGrow % 2 === 0 ? heightAfterGrow : heightAfterGrow + 1;
-
-		return {
-			...calculateBoundedCropArea(top, left, widthAfterGrow, heightAfterGrow, width, height, fullImageWidth, fullImageHeight),
-			stepIndex,
-		}
-	});
-}
-
-const BACKGROUND_SIZE = 4;
-const STEPS = 2;
+const TOTAL_FIBONACCI_STEPS = fibonacci(STEPS);
 
 const extractRegion = async (highlight, originalImage) => {
-	const crop = originalImage.clone().extract(highlight);
+	const { index, originalWidth, left, height, width, top } = highlight;
+	const extract = await originalImage.clone().extract(highlight).toBuffer();
 
-	const { left, width, top, height } = highlight;
+	const chunkSize = (originalWidth - BACKGROUND_SIZE) / TOTAL_FIBONACCI_STEPS;
+	const shrinkWidth = index == STEPS ? width : fibonacci(index) * chunkSize;
+
+	const crop = await blowOut(sharp(extract), shrinkWidth, width);
+
+	console.log(`From (${top}, ${left}), spanning ${width}w ${height}h, to (${top + height}, ${left + width})`)
 	return {
 		left,
 		top,
 		input: await crop.toBuffer(),
 	}
+}
+
+const createStaggeredHighlights = (imageWidth, imageHeight, { width, height, left, top }) => {
+	return Array(STEPS).fill(1).map((_, index) => {
+		const newWidth = width + (width / STEPS * fibonacci(index));
+		const newHeight = height + (height / STEPS * fibonacci(index));
+
+		const newLeft = left - ((newWidth - width) / 2);
+		const newTop = top - ((newHeight - height) / 2);
+
+		const boundedLeft = Math.max(newLeft, 0);
+		const boundedTop = Math.max(newTop, 0);
+	
+		const boundedWidth = Math.min(newWidth + (boundedLeft - newLeft), imageWidth - boundedLeft - 1);
+		const boundedHeight = Math.min(newHeight + (boundedTop - newTop), imageHeight - boundedTop - 1);
+	
+		return {
+			index: STEPS - index,
+			width: Math.floor(boundedWidth),
+			height: Math.floor(boundedHeight),
+			left: Math.floor(boundedLeft),
+			top: Math.floor(boundedTop),
+			originalWidth: width,
+		}
+	})
 }
 
 const percentageToAbsolute = (imageWidth, imageHeight, { width, height, left, top }) => ({
@@ -81,38 +87,13 @@ const percentageToAbsolute = (imageWidth, imageHeight, { width, height, left, to
 	top: Math.floor((top / 100) * imageHeight),
 })
 
-const createStaggeredHighlights = (imageWidth, imageHeight, { width, height, left, top }) => {
-	return Array(STEPS).fill(1).map((_, index) => {
-		const newWidth = width + (imageWidth * ((1 / STEPS) * index));
-		const newHeight = height + (imageHeight * ((1 / STEPS) * index));
-
-		const newLeft = left - ((newWidth - width) / 2);
-		const newTop = top - ((newHeight - height) / 2);
-
-		const boundedLeft = Math.max(newLeft, 0);
-		const boundedTop = Math.max(newTop, 0);
-	
-		const boundedWidth = newWidth + (boundedLeft - newLeft)
-		const boundedHeight = newHeight + (boundedTop - newTop)
-
-		return {
-			index,
-			width: Math.floor(boundedLeft),
-			height: Math.floor(boundedTop),
-			left: Math.floor(boundedWidth),
-			top: Math.floor(boundedHeight),
-		}
-	})
-}
 
 const resizeImage = async (originalImage, highlights) => {
 	const { width, height } = await originalImage.metadata();
 	const background = await blowOut(originalImage.clone(), BACKGROUND_SIZE, width);
-
 	const absoluteHighlights = highlights.map(highlight => percentageToAbsolute(width, height, highlight));
 	const staggeredHighlights = absoluteHighlights.map(highlight => createStaggeredHighlights(width, height, highlight));
-	const extractionRegions = await Promise.all(staggeredHighlights[0].map(async highlight => extractRegion(highlight, originalImage)));
-
+	const extractionRegions = await Promise.all(staggeredHighlights[0].reverse().map(async highlight => extractRegion(highlight, originalImage)));
 	background.composite(extractionRegions);
 	return background;
 }

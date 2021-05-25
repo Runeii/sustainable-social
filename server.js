@@ -24,6 +24,8 @@ app.use(fileUpload({
     createParentPath: true
 }));
 
+app.use(express.static('dist'))
+
 app.post('/upload', async (req, res) => {
     try {
         if(!req.files) {
@@ -72,13 +74,5 @@ app.use('/original', async (req, res) => {
 	res.contentType('image/jpeg');
 	return res.send(await image.toBuffer());
 });
-
-//app.use('/', async (req, res) => {
-//	const input = sharp('./R011def.jpg');
-//	const image = await resizeImage(input);
-//	res.status(200);
-//	res.contentType('image/jpeg');
-//	return res.send(await image.toBuffer());
-//});
 
 app.listen(3001, function() { console.log('listening'); });
