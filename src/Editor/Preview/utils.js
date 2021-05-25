@@ -1,4 +1,4 @@
-export const BACKEND = import.meta.env.MODE === 'development' ? 'http://localhost:3001' ? '';
+export const BACKEND = process.env.NODE_ENV === 'development' ? 'http://localhost:3001' ? '';
 
 export const getPreviewImage = async (remoteID, savedShapes) => {
 	const img = new Image();
