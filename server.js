@@ -75,4 +75,4 @@ app.use('/original', async (req, res) => {
 	return res.send(await image.toBuffer());
 });
 
-app.listen(3001, function() { console.log('listening'); });
+app.listen(process.env.PORT);

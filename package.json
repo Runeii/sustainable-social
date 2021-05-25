@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
+    "dev:server": "nodemon server.js",
     "build": "vite build",
-    "serve": "vite preview",
-    "server": "nodemon server.js"
+    "start": "npm run build && node server.js"
   },
   "dependencies": {
     "react": "^17.0.0",
@@ -22,5 +22,8 @@
     "nodemon": "^2.0.7",
     "sharp": "^0.28.1",
     "vite": "^2.2.3"
+  },
+  "engines": {
+    "node": "15.x"
   }
 }
