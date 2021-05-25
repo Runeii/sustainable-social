@@ -75,4 +75,5 @@ app.use('/original', async (req, res) => {
 	return res.send(await image.toBuffer());
 });
 
-app.listen(process.env.PORT);
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log('Server launched on port', port));
