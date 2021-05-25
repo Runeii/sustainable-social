@@ -1,5 +1,6 @@
 import styles from './Upload.module.css';
 import React, { useState } from 'react';
+import { BACKEND } from '../Editor/Preview/utils';
 
 const Upload = ({ onImageUpload }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +24,7 @@ const Upload = ({ onImageUpload }) => {
     reader.addEventListener('load', function () {
       const image = new Image();
       image.src = reader.result;
-      fetch('http://localhost:3001/upload', {
+      fetch(`${BACKEND}/upload`, {
         method: 'POST',
         body: formData
       })
