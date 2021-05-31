@@ -4,4 +4,8 @@ dist
 dist-ssr
 *.local
 previews
+previews/
+previews/*
 uploads
+uploads/
+uploads/*

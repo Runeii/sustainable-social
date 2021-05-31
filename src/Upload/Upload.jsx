@@ -1,6 +1,6 @@
-import styles from './Upload.module.css';
 import React, { useState } from 'react';
 import { BACKEND } from '../Editor/Preview/utils';
+import Button from '../Button/Button.jsx';
 
 const Upload = ({ onImageUpload }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -32,20 +32,9 @@ const Upload = ({ onImageUpload }) => {
     });
   }
 
-  if (isLoading) {
-    return (
-      <div className={styles.spinner}></div>
-    )
-  }
-
   return (
-    <>
-      <input onChange={handleUpload} type="file" id="file" name="file" className={styles.file} />
-      <label className={styles.frame} htmlFor="file">
-        Click or drag and drop an image to begin
-      </label>
-    </>
+    <Button isLoading={isLoading} onClick={handleUpload} text="Click or drag and drop an image to begin"/>
   )
 }
-
+  
 export default Upload;

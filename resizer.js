@@ -93,7 +93,8 @@ const resizeImage = async (originalImage, highlights) => {
 	const background = await blowOut(originalImage.clone(), BACKGROUND_SIZE, width);
 	const absoluteHighlights = highlights.map(highlight => percentageToAbsolute(width, height, highlight));
 	const staggeredHighlights = absoluteHighlights.map(highlight => createStaggeredHighlights(width, height, highlight));
-	const extractionRegions = await Promise.all(staggeredHighlights[0].reverse().map(async highlight => extractRegion(highlight, originalImage)));
+	const highlightStack = zip(...staggeredHighlights).reverse().flat();
+	const extractionRegions = await Promise.all(highlightStack.map(async highlight => extractRegion(highlight, originalImage)));
 	background.composite(extractionRegions);
 	return background;
 }

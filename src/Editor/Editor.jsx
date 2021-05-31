@@ -2,6 +2,7 @@ import styles from './Editor.module.css';
 import React, { useState } from 'react';
 import Preview from './Preview/Preview';
 import { getFinalImageUrl } from './Preview/utils';
+import Download from '../Download/Download';
 
 const Editor = ({ originalImage, remoteID }) => {
 
@@ -27,7 +28,9 @@ const Editor = ({ originalImage, remoteID }) => {
           savedShapes={savedShapes}
         />
       </div>
-      <a href={getFinalImageUrl(remoteID, savedShapes)} target="_blank">Download final image</a>
+      <div className={styles.sidebar}>
+        <Download url={getFinalImageUrl(remoteID, savedShapes)} />
+      </div>
     </div>
   )
 };

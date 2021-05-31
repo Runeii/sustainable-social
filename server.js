@@ -68,12 +68,12 @@ const generateImage = async (isPreview, req, res, next) => {
 app.use('/preview/:filename', async (req, res, next) => generateImage(true, req, res, next));
 app.use('/final/:filename', async (req, res, next) => generateImage(false, req, res, next));
 
-app.use('/original', async (req, res) => {
-	const image = sharp('./R011def.jpg');
+app.use('/original/:filename', async (req, res) => {
+	const image = sharp(`${UPLOADS_FOLDER}/${req.params.filename}`);
 	res.status(200);
 	res.contentType('image/jpeg');
 	return res.send(await image.toBuffer());
 });
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 app.listen(port, () => console.log('Server launched on port', port));

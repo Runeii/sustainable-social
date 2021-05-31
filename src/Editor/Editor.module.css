@@ -1,6 +1,6 @@
 .frame {
 	display: grid;
-	grid-template-areas: "preview" "sidebar";
+	grid-template-areas: "preview sidebar";
 	grid-template-columns: 70% 30%;
 	grid-template-rows: 100%;
 	height: 100vh;
@@ -9,4 +9,18 @@
 
 .preview {
 	grid-area: preview;
+	width: 100%;
+}
+
+.sidebar {
+	grid-area: sidebar;
+	display: flex;
+	place-content: center;
+	place-items: center;
+}
+
+.sidebar > * {
+	grid-column: 2 /3;
+	grid-row: 2 /3;
+	width: clamp(50%, 200px, 90%) !important;
 }
