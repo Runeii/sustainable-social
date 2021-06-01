@@ -7,6 +7,7 @@
     "build": "vite build",
     "start": "npm run build && node server.js"
   },
+  "main": "index.html",
   "dependencies": {
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
