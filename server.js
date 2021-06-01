@@ -63,11 +63,8 @@ app.post('/upload', async (req, res) => {
     }
 });
 
-
-const generateImage = async (isPreview, req, res, next) => {
-	const folder = isPreview ? PREVIEWS_FOLDER : UPLOADS_FOLDER;
-	const shapes = req.query?.shapes ? JSON.parse(req.query?.shapes) : [];
-	const input = sharp(`${folder}/${req.params.filename}`);
+const generateAnimation = (folder, filename, shapes) => {
+	const input = sharp(`${folder}/${filename}`);
 	try {
 		const image = shapes.length > 0 ? await resizeImage(input, shapes) : input;
 		res.status(200);
@@ -76,6 +73,31 @@ const generateImage = async (isPreview, req, res, next) => {
 	} catch (error) {
 		next(error)
 	}
+}
+
+const generateStatic = (folder, filename, shapes) => {
+	const input = sharp(`${folder}/${filename}`);
+	try {
+		const image = shapes.length > 0 ? await resizeImage(input, shapes) : input;
+		res.status(200);
+		res.contentType('image/jpeg');
+		return res.send(await image.toBuffer());
+	} catch (error) {
+		next(error)
+	}
+}
+
+const generateImage = async (isPreview, req, res, next) => {
+	const folder = isPreview ? PREVIEWS_FOLDER : UPLOADS_FOLDER;
+	const shapes = req.query?.shapes ? JSON.parse(req.query?.shapes) : [];
+	const isAnimation = req.query?.isAnimation ?? false;
+	
+	if (isAnimation) {
+		generateAnimation(folder, req.params.filename, shapes);
+		return;
+	}
+
+	generateStatic(folder, req.params.filename, shapes);
 };
 
 app.use('/preview/:filename', async (req, res, next) => generateImage(true, req, res, next));

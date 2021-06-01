@@ -17,10 +17,15 @@
 	display: flex;
 	place-content: center;
 	place-items: center;
+	justify-content: space-between;
+	padding: 4px;
 }
 
 .sidebar > * {
-	grid-column: 2 /3;
-	grid-row: 2 /3;
-	width: clamp(50%, 200px, 90%) !important;
+	aspect-ratio: 1 / 1;
+	width: 50% !important;
+	font-size: 0.7em;
+	text-transform: uppercase;
+	height: auto !important;
+	margin: 4px;
 }

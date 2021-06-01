@@ -29,7 +29,8 @@ const Editor = ({ originalImage, remoteID }) => {
         />
       </div>
       <div className={styles.sidebar}>
-        <Download url={getFinalImageUrl(remoteID, savedShapes)} />
+        <Download url={getFinalImageUrl(remoteID, savedShapes)}>Download final image</Download>
+        <Download url={getFinalImageUrl(remoteID, savedShapes, true)}>Download final animation</Download>
       </div>
     </div>
   )
