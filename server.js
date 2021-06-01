@@ -63,7 +63,7 @@ app.post('/upload', async (req, res) => {
     }
 });
 
-const generateAnimation = (folder, filename, shapes) => {
+const generateAnimation = async (folder, filename, shapes) => {
 	const input = sharp(`${folder}/${filename}`);
 	try {
 		const image = shapes.length > 0 ? await resizeImage(input, shapes) : input;
@@ -75,7 +75,7 @@ const generateAnimation = (folder, filename, shapes) => {
 	}
 }
 
-const generateStatic = (folder, filename, shapes) => {
+const generateStatic = async (folder, filename, shapes) => {
 	const input = sharp(`${folder}/${filename}`);
 	try {
 		const image = shapes.length > 0 ? await resizeImage(input, shapes) : input;
