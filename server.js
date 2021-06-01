@@ -39,7 +39,7 @@ app.post('/upload', async (req, res) => {
 
 			const image = await sharp(upload.data).resize(1080, 1080, {
 				fit: 'cover',
-				withoutEnlargement: true
+				withoutEnlargement: false,
 			})
 
 			const buffer = await image.toBuffer();
@@ -53,41 +53,39 @@ app.post('/upload', async (req, res) => {
     }
 });
 
-const generateAnimation = async (res, folder, filename, shapes) => {
-	const input = sharp(`${folder}/${filename}`);
+const generateAnimation = async (res, filename, shapes) => {
+	const input = sharp(`${UPLOADS_FOLDER}/${filename}`);
 		const image = shapes.length > 0 ? await resizeImage(input, shapes) : input;
 		res.status(200);
 		res.contentType('image/jpeg');
 		return res.send(await image.toBuffer());
 }
 
-const generateStatic = async (res, folder, filename, shapes) => {
-	const input = sharp(`${folder}/${filename}`);
+const generateStatic = async (res, filename, shapes) => {
+	const input = sharp(`${UPLOADS_FOLDER}/${filename}`);
 	const image = shapes.length > 0 ? await resizeImage(input, shapes) : input;
 	res.status(200);
 	res.contentType('image/jpeg');
 	return res.send(await image.toBuffer());
 }
 
-const generateImage = async (isPreview, req, res, next) => {
-	const folder = isPreview ? PREVIEWS_FOLDER : UPLOADS_FOLDER;
+const generateImage = async (req, res, next) => {
 	const shapes = req.query?.shapes ? JSON.parse(req.query?.shapes) : [];
 	const isAnimation = req.query?.isAnimation ?? false;
 	
 	try {
 		if (isAnimation) {
-			generateAnimation(res, folder, req.params.filename, shapes);
+			generateAnimation(res, req.params.filename, shapes);
 			return;
 		}
 
-		generateStatic(res, folder, req.params.filename, shapes);
+		generateStatic(res, req.params.filename, shapes);
 	} catch (error) {
 		next(error)
 	}
 };
 
-app.use('/preview/:filename', async (req, res, next) => generateImage(true, req, res, next));
-app.use('/final/:filename', async (req, res, next) => generateImage(false, req, res, next));
+app.use('/image/:filename', async (req, res, next) => generateImage(req, res, next));
 
 app.use('/original/:filename', async (req, res) => {
 	const image = sharp(`${UPLOADS_FOLDER}/${req.params.filename}`);
