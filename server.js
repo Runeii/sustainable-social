@@ -36,25 +36,15 @@ app.post('/upload', async (req, res) => {
         } else {
             const { image: upload } = req.files;
 			const { name } = upload;
-			await upload.mv(`${UPLOADS_FOLDER}/${name}`);
 
-			const image = await sharp(`${UPLOADS_FOLDER}/${name}`);
-			const { width, height} = await image.metadata();
-			const size = Math.min(width, height);
-
-			await image.resize(size, size, {
-				fit: 'cover'
+			const image = await sharp(upload.data).resize(1080, 1080, {
+				fit: 'cover',
+				withoutEnlargement: true
 			})
 
 			const buffer = await image.toBuffer();
 			await sharp(buffer).toFile(`${UPLOADS_FOLDER}/${name}`)
 
-			await image.resize(1024, 1024, {
-				fit: 'cover',
-				withoutEnlargement: true
-			})
-
-			await image.toFile(`${PREVIEWS_FOLDER}/${name}`)
 			res.status(200).send();
         }
     } catch (err) {
