@@ -3,7 +3,7 @@ export const BACKEND = process.env.NODE_ENV === 'development' ? 'http://localhos
 export const getPreviewImage = async (remoteID, savedShapes) => {
 	const img = new Image();
 	const shapes = encodeURIComponent(JSON.stringify(savedShapes))
-	img.src = `${BACKEND}/preview/${remoteID}?shapes=${shapes}`;
+	img.src = `${BACKEND}/image/${remoteID}?shapes=${shapes}`;
 	img.decoding = 'async';
 	await img.decode()
 	return img;
@@ -11,7 +11,7 @@ export const getPreviewImage = async (remoteID, savedShapes) => {
 
 export const getFinalImageUrl = (remoteID, savedShapes, isAnimation = false) => {
 	const shapes = encodeURIComponent(JSON.stringify(savedShapes))
-	return `${BACKEND}/final/${remoteID}?shapes=${shapes}&isAnimation=${isAnimation}`;
+	return `${BACKEND}/image/${remoteID}?shapes=${shapes}&isAnimation=${isAnimation}`;
 }
 
 export const refreshImage = async (context, canvasRef, containerRef, image) => {
