@@ -34,18 +34,31 @@ app.post('/upload', async (req, res) => {
                 message: 'No file uploaded'
             });
         } else {
-            const { image } = req.files;
-			await image.mv(`${UPLOADS_FOLDER}/${image.name}`);
-			console.log('Start')
-			await sharp(`${UPLOADS_FOLDER}/${image.name}`)
-				.resize(1024, 1024, {
-					fit: 'inside'
-				})
-				.toFile(`${PREVIEWS_FOLDER}/${image.name}`)
-			console.log('here')
+            const { image: upload } = req.files;
+			const { name } = upload;
+			await upload.mv(`${UPLOADS_FOLDER}/${name}`);
+
+			const image = await sharp(`${UPLOADS_FOLDER}/${name}`);
+			const { width, height} = await image.metadata();
+			const size = Math.min(width, height);
+
+			await image.resize(size, size, {
+				fit: 'cover'
+			})
+
+			const buffer = await image.toBuffer();
+			await sharp(buffer).toFile(`${UPLOADS_FOLDER}/${name}`)
+
+			await image.resize(1024, 1024, {
+				fit: 'cover',
+				withoutEnlargement: true
+			})
+
+			await image.toFile(`${PREVIEWS_FOLDER}/${name}`)
 			res.status(200).send();
         }
     } catch (err) {
+		console.log(err)
         res.status(500).send(err);
     }
 });

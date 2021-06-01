@@ -18,18 +18,9 @@ export const refreshImage = async (context, canvasRef, containerRef, image) => {
 	if (!image) {
 		return;
 	}
-
-	const isNewImageLandscape = image.width > image.height;
-
-	if (isNewImageLandscape) {
-		canvasRef.current.width = containerRef.current.clientWidth;
-		canvasRef.current.height = (containerRef.current.clientWidth / image.width) * image.height
-	} else {
-		canvasRef.current.height = canvasRef.current.clientHeight;
-		canvasRef.current.width = (containerRef.current.clientHeight / image.height) * image.width
-	}
-
-	context.drawImage(image, 0, 0, canvasRef.current.width, canvasRef.current.height);
+	canvasRef.current.width = canvasRef.current.clientWidth
+	canvasRef.current.height = canvasRef.current.clientHeight
+	context.drawImage(image, 0, 0, canvasRef.current.clientWidth, canvasRef.current.clientHeight);
 };
 
 export const refreshShapes = (context, savedShapes) => {
