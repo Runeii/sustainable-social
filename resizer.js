@@ -47,7 +47,6 @@ const extractRegion = async (highlight, originalImage) => {
 
 	const crop = await blowOut(sharp(extract), shrinkWidth, width);
 
-	console.log(`From (${top}, ${left}), spanning ${width}w ${height}h, to (${top + height}, ${left + width})`)
 	return {
 		left,
 		top,
