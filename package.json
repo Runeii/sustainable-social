@@ -5,8 +5,9 @@
     "dev": "vite",
     "dev:server": "nodemon server.js",
     "build": "vite build",
-    "start": "npm run build && node --optimize_for_size --max_old_space_size=460 server.js"
+    "start": "node --optimize_for_size --max_old_space_size=460 server.js"
   },
+  "heroku-run-build-script": true,
   "main": "index.html",
   "dependencies": {
     "react": "^17.0.0",
