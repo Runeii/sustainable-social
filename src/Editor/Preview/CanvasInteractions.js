@@ -12,15 +12,7 @@ export const getCanvasCoords = function (clientX, clientY) {
 	};
 };
 
-export const onMouseDown = (event, img) => {
-	canvas = event.target;
-	image = img;
-	context = canvas.getContext('2d');
-	const coords = getCanvasCoords(event.clientX, event.clientY);
-	currentShapeRef = { left: coords.x, top: coords.y, width: 0, height: 0 };
-};
-
-export const onMouseUp = (event, addShape) => {
+export const onMouseUp = (addShape) => {
 	context = null;
 
 	const { width, height, left, top } = currentShapeRef;
@@ -41,6 +33,16 @@ export const onMouseUp = (event, addShape) => {
 	});
 }
 
+export const onMouseDown = (event, img, addShape) => {
+	canvas = event.target;
+	image = img;
+	context = canvas.getContext('2d');
+	const coords = getCanvasCoords(event.clientX, event.clientY);
+	currentShapeRef = { left: coords.x, top: coords.y, width: 0, height: 0 };
+
+	window.addEventListener('mouseup', () => onMouseUp(addShape), { once: true });
+};
+
 export const onMouseMove = event => {
 	if (!context) {
 		return;
@@ -58,10 +60,3 @@ export const onMouseMove = event => {
 	context.strokeRect(startX, startY, width, height);
 	currentShapeRef = { left: startX, top: startY, width, height }
 };
-
-export const onMouseLeave = () => {
-	if (context) {
-		onMouseUp();
-		return;
-	}
-}

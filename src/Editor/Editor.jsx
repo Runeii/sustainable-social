@@ -1,5 +1,5 @@
 import styles from './Editor.module.css';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import Preview from './Preview/Preview';
 import { getFinalImageUrl } from './Preview/utils';
 import Download from '../Download/Download';
@@ -8,14 +8,14 @@ const Editor = ({ originalImage, remoteID }) => {
 
   const [savedShapes, setSavedShapes] = useState([]);
 
-  const addShape = shape => {
+  const addShape = useCallback(shape => {
     setSavedShapes([...savedShapes, shape]);
-  }
+  }, [savedShapes]);
 
-  const handleAddShapeError = () => {
+  const handleAddShapeError = useCallback(() => {
     console.error('Error adding shape:', savedShapes[savedShapes.length - 1]);
     setSavedShapes(savedShapes.slice(savedShapes.length, 1));
-  }
+  }, [savedShapes]);
 
   return (
     <div className={styles.frame}>

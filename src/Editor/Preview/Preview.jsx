@@ -1,7 +1,7 @@
 import styles from './Preview.module.css';
 import { getPreviewImage, refreshImage, refreshShapes } from './utils';
 import React, { useEffect, useRef, useState } from 'react';
-import { onMouseDown, onMouseLeave, onMouseMove, onMouseUp } from './CanvasInteractions';
+import { onMouseDown, onMouseMove, onMouseUp } from './CanvasInteractions';
 
 const Preview = ({ addShape, onAddShapeError, originalImage, remoteID, savedShapes }) => {
   const canvasRef = useRef(null);
@@ -44,9 +44,7 @@ const Preview = ({ addShape, onAddShapeError, originalImage, remoteID, savedShap
       <div className={styles.container} ref={containerRef}>
         <canvas
           className={styles.image}
-          onMouseDown={(e) => onMouseDown(e, image)}
-          onMouseUp={(e) => onMouseUp(e, addShape)}
-          onMouseLeave={onMouseLeave}
+          onMouseDown={(e) => onMouseDown(e, image, addShape)}
           onMouseMove={onMouseMove}
           ref={canvasRef}
         />
