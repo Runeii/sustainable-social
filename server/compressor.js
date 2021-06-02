@@ -1,6 +1,10 @@
+const GIFEncoder = require('gifencoder');
+
 const { clamp, zip } = require('lodash');
 const sharp = require('sharp');
-
+const { createCanvas } = require('canvas');
+const fs = require('fs');
+const { Canvas, Image } = require('node-canvas');
 
 const blowOut = async (image, width, finalWidth) => {
 	if (width === finalWidth) {
@@ -87,15 +91,70 @@ const percentageToAbsolute = (imageWidth, imageHeight, { width, height, left, to
 })
 
 
-const resizeImage = async (originalImage, highlights) => {
+const calculateCompressionStacks = async (originalImage, highlights) => {
 	const { width, height } = await originalImage.metadata();
-	const background = await blowOut(originalImage.clone(), BACKGROUND_SIZE, width);
 	const absoluteHighlights = highlights.map(highlight => percentageToAbsolute(width, height, highlight));
 	const staggeredHighlights = absoluteHighlights.map(highlight => createStaggeredHighlights(width, height, highlight));
 	const highlightStack = zip(...staggeredHighlights).reverse().flat();
+	return highlightStack;
+}
+
+const createImage = buffer => new Promise(async (resolve) => {
+	const img = new Image;
+	
+	var b64encoded = buffer.toString('base64');
+
+	img.onload = () => {
+		resolve(img);
+	}
+	img.onerror = (error) => {
+		console.log(error)
+	}
+
+	img.src = "data:image/jpg;base64," + b64encoded;
+});
+
+const createCompressedAnimation = async (filepath, originalImage, highlights, res) => {
+	const { width: oWidth } = await originalImage.metadata();
+	const background = await blowOut(originalImage.clone(), BACKGROUND_SIZE, oWidth);
+	const highlightStack = await calculateCompressionStacks(originalImage, highlights);
+	
+	const size = 1080;  
+	const encoder = new GIFEncoder(size, size);
+	encoder.createReadStream().pipe(res);
+	
+	encoder.start();
+	encoder.setRepeat(0);
+	encoder.setDelay(125);
+	encoder.setQuality(10);
+
+	const canvas = new Canvas(size, size);
+	const context = canvas.getContext('2d');
+	context.drawImage(await createImage(await background.toFormat('jpg').toBuffer()), 0, 0, size, size);
+	encoder.addFrame(context);
+
+	let cumulativeRegions = [];
+	for await (const highlight of highlightStack) {
+		cumulativeRegions.push(await extractRegion(highlight, originalImage));
+		const buffer = await background.composite(cumulativeRegions).toBuffer();
+		context.drawImage(await createImage(buffer), 0, 0, size, size);
+		encoder.addFrame(context);
+	}
+
+	encoder.finish();
+}
+
+const createCompressedImage = async (originalImage, highlights) => {
+	const { width, height } = await originalImage.metadata();
+	const background = await blowOut(originalImage.clone(), BACKGROUND_SIZE, width);
+	const highlightStack = await calculateCompressionStacks(originalImage, highlights);
 	const extractionRegions = await Promise.all(highlightStack.map(async highlight => extractRegion(highlight, originalImage)));
 	background.composite(extractionRegions);
 	return background;
 }
 
-module.exports = resizeImage;
+module.exports = {
+	calculateCompressionStacks,
+	createCompressedAnimation,
+	createCompressedImage
+}

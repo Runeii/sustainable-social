@@ -11,7 +11,7 @@ export const getPreviewImage = async (remoteID, savedShapes) => {
 
 export const getFinalImageUrl = (remoteID, savedShapes, isAnimation = false) => {
 	const shapes = encodeURIComponent(JSON.stringify(savedShapes))
-	return `${BACKEND}/image/${remoteID}?shapes=${shapes}&isAnimation=${isAnimation}`;
+	return `${BACKEND}/image/${remoteID}${isAnimation ? '.gif' : ''}?shapes=${shapes}&isAnimation=${isAnimation}`;
 }
 
 export const refreshImage = async (context, canvasRef, containerRef, image) => {
