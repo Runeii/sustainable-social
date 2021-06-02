@@ -1,7 +1,7 @@
 import styles from './Button.module.css';
 import React from 'react';
 
-const Button = ({ hasUpload, isLoading, onClick, text }) => {
+const Button = ({ hasUpload, isDisabled, isLoading, onClick, text }) => {
   if (isLoading) {
     return (
       <div className={styles.spinner}></div>
@@ -19,7 +19,7 @@ const Button = ({ hasUpload, isLoading, onClick, text }) => {
     )
   }
   return (
-    <div className={styles.frame} onClick={onClick}>
+    <div className={`${styles.frame} ${isDisabled ? styles.isDisabled : ''}`} onClick={onClick}>
         {text}
     </div>
   )
