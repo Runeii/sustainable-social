@@ -11,8 +11,8 @@ const Button = ({ hasUpload, isDisabled, isLoading, onClick, text }) => {
   if (hasUpload) {
     return (
       <>
-        <input onChange={onClick} type="file" id="file" name="file" className={styles.file} />
         <label className={styles.frame} htmlFor="file">
+          <input onChange={onClick} type="file" id="file" name="file" className={styles.file} />
           {text}
         </label>
       </>
