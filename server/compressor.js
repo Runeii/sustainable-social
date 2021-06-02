@@ -148,10 +148,8 @@ const createCompressedImage = async (originalImage, highlights) => {
 	const { width, height } = await originalImage.metadata();
 	const background = await blowOut(originalImage.clone(), BACKGROUND_SIZE, width);
 	const highlightStack = await calculateCompressionStacks(originalImage, highlights);
-	console.log(highlightStack)
 	const extractionRegions = await Promise.all(highlightStack.map(async highlight => extractRegion(highlight, originalImage)));
 	background.composite(extractionRegions);
-	console.log('Final')
 	return background;
 }
 
