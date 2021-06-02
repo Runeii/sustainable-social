@@ -3,6 +3,11 @@ let context = null;
 let currentShapeRef = { top: 0, left: 0, width: 0, height: 0};
 let image = null;
 
+const resetCanvas = () => {
+	context.clearRect(0, 0, canvas.width, canvas.height);
+	context.drawImage(image, 0, 0, canvas.width, canvas.height);
+}
+
 export const getCanvasCoords = function (clientX, clientY) {
 	var rect = canvas.getBoundingClientRect();
 
@@ -13,17 +18,19 @@ export const getCanvasCoords = function (clientX, clientY) {
 };
 
 export const onMouseUp = (addShape) => {
+	resetCanvas();
 	context = null;
 
 	const { width, height, left, top } = currentShapeRef;
-	if (width === 0 || height === 0) {
+	const safeWidth = Math.abs(width);
+	const safeHeight = Math.abs(height);
+
+	if (safeWidth < 1 || safeHeight < 1) {
 		return;
 	}
 
 	const topLeftX = left + Math.min(width, 0);
 	const topLeftY = top + Math.min(height, 0);
-	const safeWidth = Math.abs(width);
-	const safeHeight = Math.abs(height);
 
 	addShape({
 		width: (safeWidth / canvas.width) * 100,
@@ -47,10 +54,7 @@ export const onMouseMove = event => {
 	if (!context) {
 		return;
 	}
-
-	context.clearRect(0, 0, canvas.width, canvas.height);
-	context.drawImage(image, 0, 0, canvas.width, canvas.height);
-
+	resetCanvas();
 	const { left: startX, top: startY } = currentShapeRef;
 	const coords = getCanvasCoords(event.clientX, event.clientY);
 	const width = coords.x - startX;

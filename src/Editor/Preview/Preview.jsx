@@ -3,7 +3,7 @@ import { getPreviewImage, refreshImage, refreshShapes } from './utils';
 import React, { useEffect, useRef, useState } from 'react';
 import { onMouseDown, onMouseMove, onMouseUp } from './CanvasInteractions';
 
-const Preview = ({ addShape, onAddShapeError, originalImage, remoteID, savedShapes }) => {
+const Preview = ({ addNotification, addShape, onAddShapeError, originalImage, remoteID, savedShapes }) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -20,10 +20,15 @@ const Preview = ({ addShape, onAddShapeError, originalImage, remoteID, savedShap
       .then((img) => {
         setIsLoading(false);
         setImage(img);
+        if (savedShapes.length > 0) {
+          addNotification('Success', 'Added new focus area.')
+        }
       })
       .catch(() => {
         setIsLoading(false);
-        onAddShapeError();
+        if (savedShapes.length > 0) {
+          onAddShapeError();
+        }
       })
   }, [remoteID, savedShapes]);
 
@@ -48,6 +53,7 @@ const Preview = ({ addShape, onAddShapeError, originalImage, remoteID, savedShap
           onMouseMove={onMouseMove}
           ref={canvasRef}
         />
+        {isLoading && <div className={styles.loader} />}
       </div>
     </>
   );

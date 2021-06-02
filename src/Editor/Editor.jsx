@@ -4,23 +4,25 @@ import Preview from './Preview/Preview';
 import { getFinalImageUrl } from './Preview/utils';
 import Download from '../Download/Download';
 
-const Editor = ({ originalImage, remoteID }) => {
-
+const Editor = ({ addNotification, originalImage, remoteID }) => {
   const [savedShapes, setSavedShapes] = useState([]);
 
   const addShape = useCallback(shape => {
     setSavedShapes([...savedShapes, shape]);
+    addNotification('Loading...', 'Adding new focus area')
   }, [savedShapes]);
 
   const handleAddShapeError = useCallback(() => {
     console.error('Error adding shape:', savedShapes[savedShapes.length - 1]);
-    setSavedShapes(savedShapes.slice(savedShapes.length, 1));
+    setSavedShapes(savedShapes.slice(0, savedShapes.length - 1));
+    addNotification('Error', 'Failed to add new focus area, ignoring.')
   }, [savedShapes]);
 
   return (
     <div className={styles.frame}>
       <div className={styles.preview}>
         <Preview
+          addNotification={addNotification}
           addShape={addShape}
           onAddShapeError={handleAddShapeError}
           originalImage={originalImage}

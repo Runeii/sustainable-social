@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "dev:server": "nodemon server.js",
+    "dev:server": "nodemon -x 'node server.js || touch server.js'",
     "build": "vite build",
     "start": "node --optimize_for_size --max_old_space_size=460 server.js"
   },

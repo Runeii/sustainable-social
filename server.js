@@ -69,11 +69,19 @@ const generateStatic = async (res, filename, shapes) => {
 	return res.send(await image.toBuffer());
 }
 
+const validateShapes = shapes => shapes.map(({ height, width, left, top }) => {
+	if (height > 0 && width > 0 && left >= 0 && top >= 0) {
+		return true;
+	}
+	throw new Error('Invalid shape received')
+})
 const generateImage = async (req, res, next) => {
 	const shapes = req.query?.shapes ? JSON.parse(req.query?.shapes) : [];
 	const isAnimation = req.query?.isAnimation ?? false;
 	
 	try {
+		validateShapes(shapes);
+
 		if (isAnimation) {
 			generateAnimation(res, req.params.filename, shapes);
 			return;

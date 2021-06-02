@@ -1,0 +1,53 @@
+.container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.toast {
+  max-width: 350px;
+  overflow: hidden;
+  font-size: .875em;
+  background-color: rgba(255,255,255,.85);
+  background-clip: padding-box;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: .25em;
+  box-shadow: 0 .25em .75em rgba(0,0,0,.1);
+	animation: notify 1.5s linear forwards;
+}
+
+.type {
+  align-items: center;
+  padding: .25em .75em;
+  color: #6c757d;
+  background-color: rgba(255,255,255,.85);
+  background-clip: padding-box;
+  border-bottom: 1px solid rgba(0,0,0,.05);
+}
+
+.message {
+  padding: 0.75em;
+}
+
+@keyframes notify {
+  0% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  25% {
+    opacity: 1;
+    transform: translateY(0%);
+  }
+  90% {
+    opacity: 1;
+  }
+  99% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+    display: none;
+  }
+}
