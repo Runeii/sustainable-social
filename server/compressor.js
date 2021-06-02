@@ -69,8 +69,8 @@ const createStaggeredHighlights = (imageWidth, imageHeight, { width, height, lef
 		const boundedLeft = Math.max(newLeft, 0);
 		const boundedTop = Math.max(newTop, 0);
 	
-		const boundedWidth = Math.min(newWidth + (boundedLeft - newLeft), imageWidth - boundedLeft - 1);
-		const boundedHeight = Math.min(newHeight + (boundedTop - newTop), imageHeight - boundedTop - 1);
+		const boundedWidth = Math.min(newWidth + (boundedLeft - newLeft), imageWidth - boundedLeft - 2);
+		const boundedHeight = Math.min(newHeight + (boundedTop - newTop), imageHeight - boundedTop - 2);
 	
 		return {
 			index: STEPS - index,
@@ -148,8 +148,10 @@ const createCompressedImage = async (originalImage, highlights) => {
 	const { width, height } = await originalImage.metadata();
 	const background = await blowOut(originalImage.clone(), BACKGROUND_SIZE, width);
 	const highlightStack = await calculateCompressionStacks(originalImage, highlights);
+	console.log(highlightStack)
 	const extractionRegions = await Promise.all(highlightStack.map(async highlight => extractRegion(highlight, originalImage)));
 	background.composite(extractionRegions);
+	console.log('Final')
 	return background;
 }
 
