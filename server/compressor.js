@@ -7,12 +7,14 @@ const fs = require('fs');
 const { Canvas, Image } = require('node-canvas');
 
 const blowOut = async (image, width, finalWidth) => {
+	const target = Math.max(1, Math.round(width));
+
 	if (width === finalWidth) {
 		return image;
 	}
 	
 	const small = await image.resize({
-		width: Math.round(width),
+		width: target,
 		kernel: 'nearest'
 	}).toBuffer();
 
@@ -67,11 +69,11 @@ const createStaggeredHighlights = (imageWidth, imageHeight, { width, height, lef
 		const newLeft = left - ((newWidth - width) / 2);
 		const newTop = top - ((newHeight - height) / 2);
 
-		const boundedLeft = Math.max(newLeft, 0);
-		const boundedTop = Math.max(newTop, 0);
+		const boundedLeft = Math.max(newLeft, 1);
+		const boundedTop = Math.max(newTop, 1);
 	
-		const boundedWidth = Math.min(newWidth + (boundedLeft - newLeft), imageWidth - boundedLeft - 2);
-		const boundedHeight = Math.min(newHeight + (boundedTop - newTop), imageHeight - boundedTop - 2);
+		const boundedWidth = Math.min(newWidth + (boundedLeft - newLeft), imageWidth - boundedLeft - (stepCount + 1));
+		const boundedHeight = Math.min(newHeight + (boundedTop - newTop), imageHeight - boundedTop - (stepCount + 1));
 
 		return {
 			index: stepCount - index,
@@ -153,7 +155,7 @@ const createCompressedImage = async (originalImage, options) => {
 	const { width } = await originalImage.metadata();
 	const background = await blowOut(originalImage.clone(), BACKGROUND_SIZE, width);
 	const extractionRegions = await createExtractionRegions(originalImage, options);
-	background.composite(extractionRegions);
+	background.composite(extractionRegions)
 	return background;
 }
 
