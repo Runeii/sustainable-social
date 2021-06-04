@@ -3,7 +3,7 @@ import { getPreviewImage, refreshImage, refreshShapes } from './utils';
 import React, { useEffect, useRef, useState } from 'react';
 import { onMouseDown, onMouseMove, onMouseUp } from './CanvasInteractions';
 
-const Preview = ({ addNotification, addShape, onAddShapeError, originalImage, remoteID, savedShapes }) => {
+const Preview = ({ addNotification, addShape, onAddShapeError, options, remoteID, savedShapes }) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -16,7 +16,7 @@ const Preview = ({ addNotification, addShape, onAddShapeError, originalImage, re
     }
   
     setIsLoading(true);
-    getPreviewImage(remoteID, savedShapes)
+    getPreviewImage(remoteID, savedShapes, options)
       .then((img) => {
         setIsLoading(false);
         setImage(img);
@@ -30,7 +30,7 @@ const Preview = ({ addNotification, addShape, onAddShapeError, originalImage, re
           onAddShapeError();
         }
       })
-  }, [remoteID, savedShapes]);
+  }, [options, remoteID, savedShapes]);
 
   useEffect(() => {
     if (!canvasRef.current) {

@@ -6,23 +6,21 @@ import Upload from './Upload/Upload';
 
 const App = () => {
   const [notifications, setNotifications] = useState([]);
-  const [originalImage, setOriginalImage] = useState(null);
   const [remoteID, setRemoteID] = useState(null);
 
   const addNotification = useCallback((type, message) => {
     setNotifications(notifications => [...notifications, { type, message }]);
   }, []);
 
-  const onImageUpload = (image, name) => {
-    setOriginalImage(image);
+  const onImageUpload = (name) => {
     setRemoteID(name)
     addNotification('Success', 'Upload successful.')
   }
 
   return (
     <div className="page">
-      {!originalImage && <Upload onImageUpload={onImageUpload} />}
-      {originalImage && <Editor addNotification={addNotification} originalImage={originalImage} remoteID={remoteID} />}
+      {!remoteID && <Upload onImageUpload={onImageUpload} />}
+      {remoteID && <Editor addNotification={addNotification} remoteID={remoteID} />}
       <Notifier notifications={notifications} />
     </div>
   );

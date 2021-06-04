@@ -15,17 +15,28 @@
 .sidebar {
 	grid-area: sidebar;
 	display: flex;
+	flex-direction: column;
 	place-content: center;
 	place-items: center;
-	justify-content: space-between;
 	padding: 4px;
 }
 
-.sidebar > * {
+.sidebar > div {
 	aspect-ratio: 1 / 1;
 	width: 50% !important;
 	font-size: 0.7em;
 	text-transform: uppercase;
 	height: auto !important;
 	margin: 4px;
+}
+
+.sidebar > h3 {
+	margin-bottom: 0.5em;
+}
+.steps {
+	margin-bottom: 40px;
+}
+
+.range {
+	margin-bottom: 40px;
 }

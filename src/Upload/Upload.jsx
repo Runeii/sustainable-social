@@ -28,7 +28,7 @@ const Upload = ({ onImageUpload }) => {
         method: 'POST',
         body: formData
       })
-      .then(() => onImageUpload(image, file.name));
+      .then(() => onImageUpload(file.name));
     });
   }
 

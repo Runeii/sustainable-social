@@ -5,15 +5,11 @@ const fileUpload = require('express-fileupload');
 const cors = require('cors');
 const sharp = require('sharp');
 const fs = require('fs');
-const generateImage = require('./image');
-const { UPLOADS_FOLDER, PREVIEWS_FOLDER } = require('./CONSTANTS.js');
+const generateImage = require('./handler');
+const { UPLOADS_FOLDER } = require('./CONSTANTS.js');
 
 if (!fs.existsSync(UPLOADS_FOLDER)){
 	fs.mkdirSync(UPLOADS_FOLDER)
-}
-
-if (!fs.existsSync(PREVIEWS_FOLDER)){
-	fs.mkdirSync(PREVIEWS_FOLDER)
 }
 
 app.use(cors());

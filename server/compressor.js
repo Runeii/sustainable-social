@@ -23,7 +23,6 @@ const blowOut = async (image, width, finalWidth) => {
 };
 
 const BACKGROUND_SIZE = 8;
-const STEPS = 5;
 
 const fibonacci = num => {
 	let a = 1;
@@ -40,14 +39,14 @@ const fibonacci = num => {
 	return b;
 }
 
-const TOTAL_FIBONACCI_STEPS = fibonacci(STEPS);
+const extractRegion = async (highlight, originalImage, stepCount) => {
+	const totalFibonacciSteps = fibonacci(stepCount);
 
-const extractRegion = async (highlight, originalImage) => {
 	const { index, originalWidth, left, height, width, top } = highlight;
 	const extract = await originalImage.clone().extract(highlight).toBuffer();
 
-	const chunkSize = (originalWidth - BACKGROUND_SIZE) / TOTAL_FIBONACCI_STEPS;
-	const shrinkWidth = index == STEPS ? width : fibonacci(index) * chunkSize;
+	const chunkSize = (originalWidth - BACKGROUND_SIZE) / totalFibonacciSteps;
+	const shrinkWidth = index == stepCount ? width : fibonacci(index) * chunkSize;
 
 	const crop = await blowOut(sharp(extract), shrinkWidth, width);
 
@@ -58,10 +57,12 @@ const extractRegion = async (highlight, originalImage) => {
 	}
 }
 
-const createStaggeredHighlights = (imageWidth, imageHeight, { width, height, left, top }) => {
-	return Array(STEPS).fill(1).map((_, index) => {
-		const newWidth = width + (width / STEPS * fibonacci(index));
-		const newHeight = height + (height / STEPS * fibonacci(index));
+const createStaggeredHighlights = (imageWidth, imageHeight, { width, height, left, top }, options) => {
+	const { stepCount, stepWidth } = options;
+
+	return Array(stepCount).fill(1).map((_, index) => {
+		const newWidth = width + ((width * stepWidth) / stepCount * (index + fibonacci(index)));
+		const newHeight = height + ((height * stepWidth) / stepCount * (index + fibonacci(index)));
 
 		const newLeft = left - ((newWidth - width) / 2);
 		const newTop = top - ((newHeight - height) / 2);
@@ -71,16 +72,16 @@ const createStaggeredHighlights = (imageWidth, imageHeight, { width, height, lef
 	
 		const boundedWidth = Math.min(newWidth + (boundedLeft - newLeft), imageWidth - boundedLeft - 2);
 		const boundedHeight = Math.min(newHeight + (boundedTop - newTop), imageHeight - boundedTop - 2);
-	
+
 		return {
-			index: STEPS - index,
+			index: stepCount - index,
 			width: Math.floor(boundedWidth),
 			height: Math.floor(boundedHeight),
 			left: Math.floor(boundedLeft),
 			top: Math.floor(boundedTop),
 			originalWidth: width,
 		}
-	})
+	});
 }
 
 const percentageToAbsolute = (imageWidth, imageHeight, { width, height, left, top }) => ({
@@ -91,12 +92,14 @@ const percentageToAbsolute = (imageWidth, imageHeight, { width, height, left, to
 })
 
 
-const calculateCompressionStacks = async (originalImage, highlights) => {
+const createExtractionRegions = async (originalImage, options) => {
+	const { shapes, stepCount } = options;
 	const { width, height } = await originalImage.metadata();
-	const absoluteHighlights = highlights.map(highlight => percentageToAbsolute(width, height, highlight));
-	const staggeredHighlights = absoluteHighlights.map(highlight => createStaggeredHighlights(width, height, highlight));
+	const absoluteHighlights = shapes.map(highlight => percentageToAbsolute(width, height, highlight));
+	const staggeredHighlights = absoluteHighlights.map(highlight => createStaggeredHighlights(width, height, highlight, options));
 	const highlightStack = zip(...staggeredHighlights).reverse().flat();
-	return highlightStack;
+	const extractionRegions = await Promise.all(highlightStack.map(async highlight => extractRegion(highlight, originalImage, stepCount)));
+	return extractionRegions;
 }
 
 const createImage = buffer => new Promise(async (resolve) => {
@@ -114,10 +117,9 @@ const createImage = buffer => new Promise(async (resolve) => {
 	img.src = "data:image/jpg;base64," + b64encoded;
 });
 
-const createCompressedAnimation = async (filepath, originalImage, highlights, res) => {
+const createCompressedAnimation = async (originalImage, options, res) => {
 	const { width: oWidth } = await originalImage.metadata();
 	const background = await blowOut(originalImage.clone(), BACKGROUND_SIZE, oWidth);
-	const highlightStack = await calculateCompressionStacks(originalImage, highlights);
 	
 	const size = 1080;  
 	const encoder = new GIFEncoder(size, size);
@@ -133,10 +135,13 @@ const createCompressedAnimation = async (filepath, originalImage, highlights, re
 	context.drawImage(await createImage(await background.toFormat('jpg').toBuffer()), 0, 0, size, size);
 	encoder.addFrame(context);
 
-	let cumulativeRegions = [];
-	for await (const highlight of highlightStack) {
-		cumulativeRegions.push(await extractRegion(highlight, originalImage));
-		const buffer = await background.composite(cumulativeRegions).toBuffer();
+	for (let i = 0; i < options.stepCount; i += 1) {
+		const temporaryOptions = {
+			...options,
+			stepCount: i,
+		}
+		const extractionRegions = await createExtractionRegions(originalImage.clone(), temporaryOptions);
+		const buffer = await background.composite(extractionRegions).toBuffer();
 		context.drawImage(await createImage(buffer), 0, 0, size, size);
 		encoder.addFrame(context);
 	}
@@ -144,17 +149,16 @@ const createCompressedAnimation = async (filepath, originalImage, highlights, re
 	encoder.finish();
 }
 
-const createCompressedImage = async (originalImage, highlights) => {
-	const { width, height } = await originalImage.metadata();
+const createCompressedImage = async (originalImage, options) => {
+	const { width } = await originalImage.metadata();
 	const background = await blowOut(originalImage.clone(), BACKGROUND_SIZE, width);
-	const highlightStack = await calculateCompressionStacks(originalImage, highlights);
-	const extractionRegions = await Promise.all(highlightStack.map(async highlight => extractRegion(highlight, originalImage)));
+	const extractionRegions = await createExtractionRegions(originalImage, options);
 	background.composite(extractionRegions);
 	return background;
 }
 
 module.exports = {
-	calculateCompressionStacks,
+	createExtractionRegions,
 	createCompressedAnimation,
 	createCompressedImage
 }

@@ -2,7 +2,7 @@ const { createCompressedAnimation, createCompressedImage } = require("./compress
 const sharp = require('sharp');
 const { UPLOADS_FOLDER } = require('./CONSTANTS.js');
 
-const generateAnimation = async (res, filename, shapes) => {
+const generateAnimation = async (res, filename, options) => {
 	const filepath = `${UPLOADS_FOLDER}/${filename}`;
 	const original = filepath.split('.').slice(0, filepath.split('.').length - 1).join('.');
 	let input;
@@ -14,10 +14,11 @@ const generateAnimation = async (res, filename, shapes) => {
 		return res.send('File has been deleted');
 	}
 	res.status(200);
-	createCompressedAnimation(filepath, input, shapes, res);
+	createCompressedAnimation(input, options, res);
 }
 
-const generateStatic = async (res, filename, shapes) => {
+const generateStatic = async (res, filename, options) => {
+	const { shapes } = options;
 	let input;
 	try {
 		input = sharp(`${UPLOADS_FOLDER}/${filename}`);
@@ -26,7 +27,7 @@ const generateStatic = async (res, filename, shapes) => {
 	} catch (error) {
 		return res.send('File has been deleted');
 	}
-	const image = shapes.length > 0 ? await createCompressedImage(input, shapes) : input;
+	const image = shapes.length > 0 ? await createCompressedImage(input, options) : input;
 	res.status(200);
 	res.contentType('image/jpeg');
 	return res.send(await image.toBuffer());
@@ -40,17 +41,22 @@ const validateShapes = shapes => shapes.map(({ height, width, left, top }) => {
 })
 
 const generateImage = async (req, res, next) => {
-	const shapes = req.query?.shapes ? JSON.parse(req.query?.shapes) : [];
 	const isAnimation = (req.query?.isAnimation ?? false) === 'true';
 
+	const options = {
+		shapes: req.query?.shapes ? JSON.parse(req.query.shapes) : [],
+		stepCount: req.query?.stepCount ? parseInt(req.query.stepCount) : 5,
+		stepWidth: req.query?.stepWidth ? parseFloat(req.query.stepWidth) : 1,
+	};
+
 	try {
-		validateShapes(shapes);
+		validateShapes(options.shapes);
 		if (isAnimation) {
-			generateAnimation(res, req.params.filename, shapes);
+			generateAnimation(res, req.params.filename, options);
 			return;
 		}
 
-		generateStatic(res, req.params.filename, shapes);
+		generateStatic(res, req.params.filename, options);
 		return;
 	} catch (error) {
 		next(error)
