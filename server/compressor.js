@@ -7,7 +7,7 @@ const fs = require('fs');
 const { Canvas, Image } = require('node-canvas');
 
 const blowOut = async (image, width, finalWidth) => {
-	const target = Math.max(1, Math.round(width));
+	const target = Math.max(1, Math.ceil(width));
 
 	if (width === finalWidth) {
 		return image;
