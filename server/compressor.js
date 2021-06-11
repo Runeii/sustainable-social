@@ -136,6 +136,10 @@ const createCompressedAnimation = async (originalImage, options, res) => {
 
 	const canvas = new Canvas(size, size);
 	const context = canvas.getContext('2d');
+	context.drawImage(await createImage(await originalImage.toFormat('jpg').toBuffer()), 0, 0, size, size);
+	encoder.addFrame(context);
+	encoder.addFrame(context);
+
 	context.drawImage(await createImage(await background.toFormat('jpg').toBuffer()), 0, 0, size, size);
 	encoder.addFrame(context);
 
