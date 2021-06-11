@@ -6,22 +6,22 @@ const { createCanvas } = require('canvas');
 const fs = require('fs');
 const { Canvas, Image } = require('node-canvas');
 
-const blowOut = async (image, width, finalWidth) => {
-	if (width === finalWidth) {
+const blowOut = async (image, smallWidth) => {
+	const { width, height } = await image.metadata();
+
+	const targetWidth = Math.ceil(smallWidth);
+	if (targetWidth === width) {
 		return image;
 	}
 
-	const { width: sourceWidth } = await image.metadata();
-	const smallTarget = Math.max(1, Math.ceil(width));
-	const largeTarget = Math.min(finalWidth, sourceWidth - 4);
-
 	const small = await image.resize({
-		width: smallTarget,
+		width: targetWidth,
 		kernel: 'nearest'
 	}).toBuffer();
-
-	return sharp(small).resize({
-		width: largeTarget,
+	
+	return await sharp(small).resize({
+		width,
+		height,
 		kernel: 'nearest'
 	});
 };
